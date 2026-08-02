@@ -60,27 +60,26 @@ const supabaseClient = supabase.createClient(
     SUPABASE_KEY
 );
 
-// Create a permanent device user ID
-let userId = localStorage.getItem("user_id");
+// Prayer Jar localStorage key
+const STORAGE_KEY = "prayerjar_user_id";
 
-alert("Before = " + userId);
+// Get existing Prayer Jar user
+let userId = localStorage.getItem(STORAGE_KEY);
 
+// Create one if not found
 if (!userId) {
     userId = crypto.randomUUID();
-    localStorage.setItem("user_id", userId);
-    alert("Created = " + userId);
+    localStorage.setItem(STORAGE_KEY, userId);
+    console.log("🆕 New Prayer Jar User:", userId);
 } else {
-    alert("Existing = " + userId);
+    console.log("✅ Existing Prayer Jar User:", userId);
 }
-
-alert("After = " + localStorage.getItem("user_id"));
 
 window.userId = userId;
 
 // Register user in Supabase
 async function registerUser() {
 
-    // Check if user already exists
     const { data, error } = await supabaseClient
         .from("profile1")
         .select("user_id")
@@ -92,7 +91,6 @@ async function registerUser() {
         return;
     }
 
-    // If user not found, insert new row
     if (!data) {
 
         const { error: insertError } = await supabaseClient
