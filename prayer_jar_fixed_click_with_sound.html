@@ -45,37 +45,70 @@ style="-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;">
 <div class="overlay" id="submit"><div class="card"><h2>Submit Prayer</h2><textarea placeholder="Your prayer..."></textarea><div class="actions"><button onclick="submit.style.display='none'">Cancel</button><button onclick="submit.style.display='none'">Submit</button></div></div></div>
 <div class="overlay" id="thanks"><div class="card"><h2>🙏 Thank You</h2><p>You completed today's 10 prayers. Come back tomorrow.</p><button onclick="thanks.style.display='none'">Close</button></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
- 
+
+//==============================
+// SUPABASE PART 1
+//==============================
+
+// Paste your values here
 const SUPABASE_URL = "https://bslelkeatmwdmfmoockm.supabase.co";
 const SUPABASE_KEY = "sb_publishable_smuHDWh9DN8RHd-mBwsWGQ_0fVcBi3Q";
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
-async function initUser(){
+// Create local user id if first visit
+let userId = localStorage.getItem("user_id");
 
-  let userId = localStorage.getItem("user_id");
-
-  if(userId){
-    console.log("Existing User:", userId);
-    return;
-  }
-
-  const { data, error } = await sb.auth.signInAnonymously();
-
-  if(error){
-    console.error(error);
-    return;
-  }
-
-  userId = data.user.id;
-
-  localStorage.setItem("user_id", userId);
-
-  console.log("New User:", userId);
+if (!userId) {
+    userId = crypto.randomUUID();
+    localStorage.setItem("user_id", userId);
 }
 
-initUser();
+window.userId = userId;
+
+// Save user to Supabase only once
+async function registerUser() {
+
+    // Check if already exists
+    const { data } = await supabaseClient
+        .from("profiles")
+        .select("user_id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+    if (!data) {
+
+        const { error } = await supabaseClient
+            .from("profiles")
+            .insert({
+                user_id: userId
+            });
+
+        if (error) {
+            console.log(error);
+        } else {
+            console.log("New User Registered");
+        }
+
+    } else {
+
+        console.log("Existing User");
+
+    }
+
+}
+
+registerUser();
+
+//==============================
+// END PART 1
+//==============================
+
 
 const msgs=["WELCOME TO PRAYER JAR","YOU PRAY FOR OTHERS","OTHERS WILL PRAY FOR YOU"];
 let idx=0;
