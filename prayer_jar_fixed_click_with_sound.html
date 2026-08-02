@@ -47,12 +47,11 @@ style="-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-
 //==============================
 // SUPABASE PART 1
 //==============================
 
-// Paste your values here
+// Your Supabase Project
 const SUPABASE_URL = "https://bslelkeatmwdmfmoockm.supabase.co";
 const SUPABASE_KEY = "sb_publishable_smuHDWh9DN8RHd-mBwsWGQ_0fVcBi3Q";
 
@@ -61,43 +60,54 @@ const supabaseClient = supabase.createClient(
     SUPABASE_KEY
 );
 
-// Create local user id if first visit
+// Create a permanent device user ID
 let userId = localStorage.getItem("user_id");
 
 if (!userId) {
     userId = crypto.randomUUID();
     localStorage.setItem("user_id", userId);
+    console.log("🆕 New Local User:", userId);
+} else {
+    console.log("✅ Existing Local User:", userId);
 }
 
 window.userId = userId;
 
-// Save user to Supabase only once
+// Register user in Supabase
 async function registerUser() {
 
-    // Check if already exists
-    const { data } = await supabaseClient
+    // Check if user already exists
+    const { data, error } = await supabaseClient
         .from("profile1")
         .select("user_id")
         .eq("user_id", userId)
         .maybeSingle();
 
+    if (error) {
+        console.error("Select Error:", error);
+        return;
+    }
+
+    // If user not found, insert new row
     if (!data) {
 
-        const { error } = await supabaseClient
+        const { error: insertError } = await supabaseClient
             .from("profile1")
-            .insert({
-                user_id: userId
-            });
+            .insert([
+                {
+                    user_id: userId
+                }
+            ]);
 
-        if (error) {
-            console.log(error);
+        if (insertError) {
+            console.error("Insert Error:", insertError);
         } else {
-            console.log("New User Registered");
+            console.log("✅ New User Registered");
         }
 
     } else {
 
-        console.log("Existing User");
+        console.log("✅ Existing User Found");
 
     }
 
