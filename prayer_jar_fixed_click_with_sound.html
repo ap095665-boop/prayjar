@@ -76,7 +76,7 @@ async function registerUser() {
 
     // Check if already exists
     const { data } = await supabaseClient
-        .from("profiles")
+        .from("profile1")
         .select("user_id")
         .eq("user_id", userId)
         .maybeSingle();
@@ -84,7 +84,7 @@ async function registerUser() {
     if (!data) {
 
         const { error } = await supabaseClient
-            .from("profiles")
+            .from("profile1")
             .insert({
                 user_id: userId
             });
