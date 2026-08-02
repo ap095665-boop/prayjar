@@ -39,11 +39,36 @@ style="-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;">
 <div id="remaining">🫙 Touch the jar to open prayer request</div>
 </div>
 <div class="buttonRow"><div class="submit" id="streakBtn">🔥 Streaks</div><div class="submit" id="submitBtn">➕ Submit Prayer</div></div>
-<div class="tabs">❤️ Donate &nbsp; 📖 Testimony &nbsp; 📨 Your Request</div>
-
+<div class="tabs">
+<span id="donateTab">❤️ Donate</span>
+&nbsp;&nbsp;
+<span id="testimonyTab">📖 Testimony</span>
+&nbsp;&nbsp;
+<span id="requestTab" style="cursor:pointer;">📨 Your Request</span>
+</div>
 <div class="overlay" id="pray"><div class="card"><h2>🙏 Prayer Request</h2><div style="max-height:220px;overflow-y:auto;margin:12px 0;padding-right:6px;"><p id="prayerText">Please pray for someone in need.</p></div><div class="actions"><button onclick="done()">Skip</button><button onclick="done()">🙏 I Prayed</button></div></div></div>
 <div class="overlay" id="submit"><div class="card"><h2>Submit Prayer</h2><textarea placeholder="Your prayer..."></textarea><div class="actions"><button onclick="submit.style.display='none'">Cancel</button><button onclick="submitPrayer()">Submit</button></div></div></div>
 <div class="overlay" id="thanks"><div class="card"><h2>🙏 Thank You</h2><p>You completed today's 10 prayers. Come back tomorrow.</p><button onclick="thanks.style.display='none'">Close</button></div></div>
+    <div class="overlay" id="myRequests">
+
+<div class="card">
+
+<h2>📨 My Prayer Requests</h2>
+
+<div id="requestList"
+style="
+max-height:320px;
+overflow:auto;
+margin-top:12px;">
+</div>
+
+<button onclick="myRequests.style.display='none'">
+Close
+</button>
+
+</div>
+
+    </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -157,6 +182,79 @@ async function submitPrayer() {
     alert("🙏 Prayer submitted successfully.\nWaiting for approval.");
 
 }
+    async function loadMyRequests(){
+
+const { data,error } =
+await supabaseClient
+.from("prayers")
+.select("*")
+.eq("user_id",userId)
+.order("created_at",{ascending:false});
+
+if(error){
+alert(error.message);
+return;
+}
+
+let html="";
+
+if(data.length===0){
+
+html="<p>No prayer requests yet.</p>";
+
+}else{
+
+data.forEach(p=>{
+
+let color="gold";
+let status="🟡 Pending";
+
+if(p.status==="approved"){
+status="🟢 Approved";
+color="#2ecc71";
+}
+
+if(p.status==="rejected"){
+status="🔴 Rejected";
+color="#ff4444";
+}
+
+html+=`
+
+<div style="
+padding:12px;
+margin-bottom:12px;
+background:#1b1b1b;
+border-radius:12px;">
+
+<div style="color:${color};
+font-weight:bold;">
+${status}
+</div>
+
+<p style="margin:8px 0;">
+${p.prayer}
+</p>
+
+${p.reject_reason
+?`<small>
+Reason:
+${p.reject_reason}
+</small>`:""}
+
+</div>
+
+`;
+
+});
+
+}
+
+requestList.innerHTML=html;
+
+myRequests.style.display="flex";
+
+    }
 
 const msgs=["WELCOME TO PRAYER JAR","YOU PRAY FOR OTHERS","OTHERS WILL PRAY FOR YOU"];
 let idx=0;
@@ -183,5 +281,6 @@ function done(){pray.style.display="none";}
 submitBtn.onclick = () => {
     submit.style.display = "flex";
 };
+    requestTab.onclick=loadMyRequests;
 </script>
 </body></html>
