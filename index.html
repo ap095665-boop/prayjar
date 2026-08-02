@@ -63,13 +63,17 @@ const supabaseClient = supabase.createClient(
 // Create a permanent device user ID
 let userId = localStorage.getItem("user_id");
 
+alert("Before = " + userId);
+
 if (!userId) {
     userId = crypto.randomUUID();
     localStorage.setItem("user_id", userId);
-    console.log("🆕 New Local User:", userId);
+    alert("Created = " + userId);
 } else {
-    console.log("✅ Existing Local User:", userId);
+    alert("Existing = " + userId);
 }
+
+alert("After = " + localStorage.getItem("user_id"));
 
 window.userId = userId;
 
