@@ -42,7 +42,7 @@ style="-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;">
 <div class="tabs">❤️ Donate &nbsp; 📖 Testimony &nbsp; 📨 Your Request</div>
 
 <div class="overlay" id="pray"><div class="card"><h2>🙏 Prayer Request</h2><div style="max-height:220px;overflow-y:auto;margin:12px 0;padding-right:6px;"><p id="prayerText">Please pray for someone in need.</p></div><div class="actions"><button onclick="done()">Skip</button><button onclick="done()">🙏 I Prayed</button></div></div></div>
-<div class="overlay" id="submit"><div class="card"><h2>Submit Prayer</h2><textarea placeholder="Your prayer..."></textarea><div class="actions"><button onclick="submit.style.display='none'">Cancel</button><button onclick="submit.style.display='none'">Submit</button></div></div></div>
+<div class="overlay" id="submit"><div class="card"><h2>Submit Prayer</h2><textarea placeholder="Your prayer..."></textarea><div class="actions"><button onclick="submit.style.display='none'">Cancel</button><button onclick="submitPrayer()">Submit</button></div></div></div>
 <div class="overlay" id="thanks"><div class="card"><h2>🙏 Thank You</h2><p>You completed today's 10 prayers. Come back tomorrow.</p><button onclick="thanks.style.display='none'">Close</button></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -120,7 +120,43 @@ registerUser();
 //==============================
 // END PART 1
 //==============================
+//==============================
+// PART 2 - SUBMIT PRAYER
+//==============================
 
+async function submitPrayer() {
+
+    const textarea = document.querySelector("#submit textarea");
+
+    const prayer = textarea.value.trim();
+
+    if (!prayer) {
+        alert("Please enter a prayer.");
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from("prayers")
+        .insert([
+            {
+                user_id: userId,
+                prayer: prayer,
+                status: "pending"
+            }
+        ]);
+
+    if (error) {
+        alert("Error: " + error.message);
+        return;
+    }
+
+    textarea.value = "";
+
+    submit.style.display = "none";
+
+    alert("🙏 Prayer submitted successfully.\nWaiting for approval.");
+
+}
 
 const msgs=["WELCOME TO PRAYER JAR","YOU PRAY FOR OTHERS","OTHERS WILL PRAY FOR YOU"];
 let idx=0;
@@ -144,6 +180,8 @@ jarVideo.onended=()=>{
  pray.style.display="flex";
 }
 function done(){pray.style.display="none";}
-submitBtn.onclick=()=>submit.style.display="flex";
+submitBtn.onclick = () => {
+    submit.style.display = "flex";
+};
 </script>
 </body></html>
