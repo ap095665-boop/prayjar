@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prayer Jar Premium</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:radial-gradient(circle at top,#350000,#000 70%);color:#fff}
+.page{max-width:430px;margin:auto;min-height:100vh;padding:28px 18px 120px;display:flex;flex-direction:column;align-items:center;gap:22px}
+#morph{height:72px;font-size:34px;font-weight:800;color:#ffd54f;display:flex;align-items:center;justify-content:center;text-align:center;transition:all .7s ease;filter:blur(0);opacity:1}
+.morphOut{opacity:0;filter:blur(12px);transform:scale(.92)}
+.morphIn{opacity:1;filter:blur(0);transform:scale(1)}
+.jar{position:relative}
+.glow{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:180px;height:180px;border-radius:50%;
+background:radial-gradient(circle,#ffc107,#ff5a00 45%,transparent 75%);filter:blur(12px)}
+video{position:relative;width:145px;border-radius:16px;display:block;cursor:pointer}
+#remaining{color:#ffd54f;font-size:18px}
+.submit{position:fixed;left:50%;transform:translateX(-50%);bottom:76px;background:#d4af37;color:#000;padding:14px 24px;border-radius:28px;font-weight:bold;cursor:pointer;z-index:20}
+.buttonRow{position:fixed;left:50%;transform:translateX(-50%);bottom:76px;display:flex;gap:12px;width:min(92%,380px);z-index:20}
+.buttonRow .submit{position:static;transform:none;left:auto;flex:1;text-align:center}
+.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:#171717ee;border:1px solid #d4af37;border-radius:28px;padding:12px 18px;white-space:nowrap}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);justify-content:center;align-items:center;z-index:100}
+.card{background:#111;width:90%;max-width:360px;border-radius:18px;padding:20px}
+textarea{width:100%;height:90px;margin:12px 0;background:#222;color:#fff}
+.actions{display:flex;gap:10px}.actions button{flex:1;padding:12px}
+</style></head><body>
+<div class="page">
+<div id="morph">WELCOME TO PRAYER JAR</div>
+<div class="jar"><div class="glow"></div>
+<video id="jarVideo"
+playsinline
+preload="auto"
+disablepictureinpicture
+controlslist="nodownload noplaybackrate noremoteplayback"
+oncontextmenu="return false;"
+draggable="false"
+style="-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;">
+<source src="https://ap095665-boop.github.io/Trial/video-background-remover.webm" type="video/webm">
+</video>
+</div>
+<div id="remaining">🫙 Touch the jar to open prayer request</div>
+</div>
+<div class="buttonRow"><div class="submit" id="streakBtn">🔥 Streaks</div><div class="submit" id="submitBtn">➕ Submit Prayer</div></div>
+<div class="tabs">❤️ Donate &nbsp; 📖 Testimony &nbsp; 📨 Your Request</div>
+
+<div class="overlay" id="pray"><div class="card"><h2>🙏 Prayer Request</h2><div style="max-height:220px;overflow-y:auto;margin:12px 0;padding-right:6px;"><p id="prayerText">Please pray for someone in need.</p></div><div class="actions"><button onclick="done()">Skip</button><button onclick="done()">🙏 I Prayed</button></div></div></div>
+<div class="overlay" id="submit"><div class="card"><h2>Submit Prayer</h2><textarea placeholder="Your prayer..."></textarea><div class="actions"><button onclick="submit.style.display='none'">Cancel</button><button onclick="submit.style.display='none'">Submit</button></div></div></div>
+<div class="overlay" id="thanks"><div class="card"><h2>🙏 Thank You</h2><p>You completed today's 10 prayers. Come back tomorrow.</p><button onclick="thanks.style.display='none'">Close</button></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+//==============================
+// SUPABASE PART 1
+//==============================
+
+// Your Supabase Project
+const SUPABASE_URL = "https://bslelkeatmwdmfmoockm.supabase.co";
+const SUPABASE_KEY = "sb_publishable_smuHDWh9DN8RHd-mBwsWGQ_0fVcBi3Q";
+
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+// Create a permanent device user ID
+let userId = localStorage.getItem("user_id");
+
+if (!userId) {
+    userId = crypto.randomUUID();
+    localStorage.setItem("user_id", userId);
+    console.log("🆕 New Local User:", userId);
+} else {
+    console.log("✅ Existing Local User:", userId);
+}
+
+window.userId = userId;
+
+// Register user in Supabase
+async function registerUser() {
+
+    // Check if user already exists
+    const { data, error } = await supabaseClient
+        .from("profile1")
+        .select("user_id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Select Error:", error);
+        return;
+    }
+
+    // If user not found, insert new row
+    if (!data) {
+
+        const { error: insertError } = await supabaseClient
+            .from("profile1")
+            .insert([
+                {
+                    user_id: userId
+                }
+            ]);
+
+        if (insertError) {
+            console.error("Insert Error:", insertError);
+        } else {
+            console.log("✅ New User Registered");
+        }
+
+    } else {
+
+        console.log("✅ Existing User Found");
+
+    }
+
+}
+
+registerUser();
+
+//==============================
+// END PART 1
+//==============================
+
+
+const msgs=["WELCOME TO PRAYER JAR","YOU PRAY FOR OTHERS","OTHERS WILL PRAY FOR YOU"];
+let idx=0;
+setInterval(()=>{
+ const e=document.getElementById("morph");
+ e.className="morphOut";
+ setTimeout(()=>{
+   idx=(idx+1)%msgs.length;
+   e.textContent=msgs[idx];
+   e.className="morphIn";
+ },450);
+},3000);
+
+const prayers=["Please pray for someone in need."];
+let prayerIndex=0;
+jarVideo.onclick=()=>{jarVideo.currentTime=0;jarVideo.play();};
+jarVideo.addEventListener("contextmenu",e=>e.preventDefault());
+jarVideo.onended=()=>{
+ document.getElementById("prayerText").textContent=prayers[prayerIndex%prayers.length];
+ prayerIndex++;
+ pray.style.display="flex";
+}
+function done(){pray.style.display="none";}
+submitBtn.onclick=()=>submit.style.display="flex";
+</script>
+</body></html>
