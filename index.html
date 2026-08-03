@@ -429,9 +429,8 @@ if (profileError) {
 const { data: updated, error: updateError } = await supabaseClient
 .from("profile1")
 .update({
-    current_streak: currentStreak,
-    longest_streak: longestStreak,
-    prayed_count: prayedCount,
+    current_streak: 99,
+    longest_streak: 99,
     last_prayed_date: today
 })
 .eq("user_id", userId)
