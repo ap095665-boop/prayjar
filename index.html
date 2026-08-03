@@ -420,21 +420,23 @@ async function prayDone(){
 
     prayedCount++;
 
-    await supabaseClient
-    .from("profile1")
-    .update({
+   <p style="margin:8px 0;">
+${p.prayer}
+</p>
 
-        current_streak:currentStreak,
+const { error: updateError } = await supabaseClient
+.from("profile1")
+.update({
+    current_streak: currentStreak,
+    longest_streak: longestStreak,
+    prayed_count: prayedCount,
+    last_prayed_date: today
+})
+.eq("user_id", userId);
 
-        longest_streak:longestStreak,
-
-        prayed_count:prayedCount,
-
-        last_prayed_date:today
-
-    })
-    .eq("user_id",userId);
-
+if (updateError) {
+    alert(updateError.message);
+}
     pray.style.display="none";
 
 }
