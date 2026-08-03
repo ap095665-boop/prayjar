@@ -261,6 +261,12 @@ ${status}
 ${p.prayer}
 </p>
 
+${p.status==="approved"
+?`<div style="color:#ffd54f;font-size:14px;margin-top:8px;">
+🙏 ${p.prayed_count} people prayed
+</div>`
+:""}
+
 ${p.reject_reason
 ?`<small>
 Reason:
