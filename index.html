@@ -370,11 +370,12 @@ async function prayDone(){
     );
 
     // Get user profile
-    const { data: profile } = await supabaseClient
-    .from("profile1")
-    .select("*")
-    .eq("user_id",userId)
-    .single();
+   const { data: profile, error: profileError } = await supabaseClient
+  .from("profile1")
+  .select("*")
+  .eq("user_id", userId)
+  .single();
+
 if (profileError) {
     alert(profileError.message);
     return;
