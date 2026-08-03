@@ -285,21 +285,41 @@ async function skipPrayer(){
 
 async function prayDone(){
 
+    // Save prayer action
     await supabaseClient
     .from("prayer_actions")
     .insert([{
-
         user_id:userId,
-
         prayer_id:currentPrayer.id,
-
         action:"prayed"
-
     }]);
+
+    // Increase prayer count
+    await supabaseClient.rpc(
+        "increment_prayed_count",
+        {
+            prayer_id_input:currentPrayer.id
+        }
+    );
+
+    // Get current profile
+    const { data } = await supabaseClient
+    .from("profile1")
+    .select("prayed_count")
+    .eq("user_id",userId)
+    .single();
+
+    // Update prayed count
+    await supabaseClient
+    .from("profile1")
+    .update({
+        prayed_count:(data.prayed_count || 0)+1
+    })
+    .eq("user_id",userId);
 
     pray.style.display="none";
 
-}   
+}
 const msgs=["WELCOME TO PRAYER JAR","YOU PRAY FOR OTHERS","OTHERS WILL PRAY FOR YOU"];
 let idx=0;
 setInterval(()=>{
