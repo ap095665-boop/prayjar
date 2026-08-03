@@ -422,7 +422,7 @@ async function prayDone(){
 
    
 
-const { error: updateError } = await supabaseClient
+const { data: updated, error: updateError } = await supabaseClient
 .from("profile1")
 .update({
     current_streak: currentStreak,
@@ -430,7 +430,10 @@ const { error: updateError } = await supabaseClient
     prayed_count: prayedCount,
     last_prayed_date: today
 })
-.eq("user_id", userId);
+.eq("user_id", userId)
+.select();
+
+console.log(updated);
 
 if (updateError) {
     alert(updateError.message);
