@@ -46,7 +46,9 @@ style="-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;">
 &nbsp;&nbsp;
 <span id="requestTab" style="cursor:pointer;">📨 Your Request</span>
 </div>
-<div class="overlay" id="pray"><div class="card"><h2>🙏 Prayer Request</h2><div style="max-height:220px;overflow-y:auto;margin:12px 0;padding-right:6px;"><p id="prayerText">Please pray for someone in need.</p></div><div class="actions"><button onclick="done()">Skip</button><button onclick="done()">🙏 I Prayed</button></div></div></div>
+<div class="overlay" id="pray"><div class="card"><h2>🙏 Prayer Request</h2><div style="max-height:220px;overflow-y:auto;margin:12px 0;padding-right:6px;"><p id="prayerText">Please pray for someone in need.</p></div><div class="actions"><button onclick="skipPrayer()">Skip</button>
+
+<button onclick="prayDone()">🙏 I Prayed</button></div></div></div>
 <div class="overlay" id="submit"><div class="card"><h2>Submit Prayer</h2><textarea placeholder="Your prayer..."></textarea><div class="actions"><button onclick="submit.style.display='none'">Cancel</button><button onclick="submitPrayer()">Submit</button></div></div></div>
 <div class="overlay" id="thanks"><div class="card"><h2>🙏 Thank You</h2><p>You completed today's 10 prayers. Come back tomorrow.</p><button onclick="thanks.style.display='none'">Close</button></div></div>
     <div class="overlay" id="myRequests">
@@ -255,7 +257,49 @@ requestList.innerHTML=html;
 myRequests.style.display="flex";
 
     }
+//==============================
+// SKIP PRAYER
+//==============================
 
+async function skipPrayer(){
+
+    await supabaseClient
+    .from("prayer_actions")
+    .insert([{
+
+        user_id:userId,
+
+        prayer_id:currentPrayer.id,
+
+        action:"skipped"
+
+    }]);
+
+    pray.style.display="none";
+
+}
+
+ //==============================
+// I PRAYED
+//==============================
+
+async function prayDone(){
+
+    await supabaseClient
+    .from("prayer_actions")
+    .insert([{
+
+        user_id:userId,
+
+        prayer_id:currentPrayer.id,
+
+        action:"prayed"
+
+    }]);
+
+    pray.style.display="none";
+
+}   
 const msgs=["WELCOME TO PRAYER JAR","YOU PRAY FOR OTHERS","OTHERS WILL PRAY FOR YOU"];
 let idx=0;
 setInterval(()=>{
@@ -268,15 +312,59 @@ setInterval(()=>{
  },450);
 },3000);
 
-const prayers=["Please pray for someone in need."];
-let prayerIndex=0;
+
 jarVideo.onclick=()=>{jarVideo.currentTime=0;jarVideo.play();};
 jarVideo.addEventListener("contextmenu",e=>e.preventDefault());
-jarVideo.onended=()=>{
- document.getElementById("prayerText").textContent=prayers[prayerIndex%prayers.length];
- prayerIndex++;
- pray.style.display="flex";
-}
+
+        data[Math.floor(Math.random() * data.length)];
+jarVideo.onended = async () => {
+
+    // Get all approved prayers except the user's own
+    const { data: prayers, error } = await supabaseClient
+        .from("prayers")
+        .select("*")
+        .eq("status", "approved")
+        .neq("user_id", userId);
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    if (!prayers || prayers.length === 0) {
+        alert("🙏 No prayer requests available.");
+        return;
+    }
+
+    // Get prayers already skipped or prayed
+    const { data: actions } = await supabaseClient
+        .from("prayer_actions")
+        .select("prayer_id")
+        .eq("user_id", userId);
+
+    const viewed = actions
+        ? actions.map(a => a.prayer_id)
+        : [];
+
+    // Remove already viewed prayers
+    const available = prayers.filter(
+        p => !viewed.includes(p.id)
+    );
+
+    if (available.length === 0) {
+        alert("🎉 You have prayed for all available prayer requests.");
+        return;
+    }
+
+    const randomPrayer =
+        available[Math.floor(Math.random() * available.length)];
+
+    window.currentPrayer = randomPrayer;
+
+    prayerText.textContent = randomPrayer.prayer;
+
+    pray.style.display = "flex";
+};
 function done(){pray.style.display="none";}
 submitBtn.onclick = () => {
     submit.style.display = "flex";
