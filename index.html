@@ -375,7 +375,10 @@ async function prayDone(){
     .select("*")
     .eq("user_id",userId)
     .single();
-
+if (profileError) {
+    alert(profileError.message);
+    return;
+}
     const today = new Date().toISOString().split("T")[0];
 
     let currentStreak = profile.current_streak || 0;
