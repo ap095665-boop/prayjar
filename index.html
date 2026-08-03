@@ -316,7 +316,7 @@ setInterval(()=>{
 jarVideo.onclick=()=>{jarVideo.currentTime=0;jarVideo.play();};
 jarVideo.addEventListener("contextmenu",e=>e.preventDefault());
 
-        data[Math.floor(Math.random() * data.length)];
+       
 jarVideo.onended = async () => {
 
     // Get all approved prayers except the user's own
@@ -337,10 +337,15 @@ jarVideo.onended = async () => {
     }
 
     // Get prayers already skipped or prayed
-    const { data: actions } = await supabaseClient
-        .from("prayer_actions")
-        .select("prayer_id")
-        .eq("user_id", userId);
+    const { data: actions, error: actionError } = await supabaseClient
+    .from("prayer_actions")
+    .select("prayer_id")
+    .eq("user_id", userId);
+
+if (actionError) {
+    alert(actionError.message);
+    return;
+}
 
     const viewed = actions
         ? actions.map(a => a.prayer_id)
