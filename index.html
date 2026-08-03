@@ -370,16 +370,16 @@ async function prayDone(){
     );
 
     // Get user profile
-   const { data: profile, error: profileError } = await supabaseClient
-  .from("profile1")
-  .select("*")
-  .eq("user_id", userId)
-  .single();
+   const { data: profile } = await supabaseClient
+.from("profile1")
+.select("*")
+.eq("user_id",userId)
+.single();
 
-if (profileError) {
-    alert(profileError.message);
-    return;
-}
+alert("Browser ID: " + userId);
+alert(JSON.stringify(profile));
+
+const today = new Date().toISOString().split("T")[0];
     const today = new Date().toISOString().split("T")[0];
 
     let currentStreak = profile.current_streak || 0;
