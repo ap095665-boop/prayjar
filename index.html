@@ -71,6 +71,29 @@ Close
 </div>
 
     </div>
+    <div class="overlay" id="streakPopup">
+
+<div class="card">
+
+<h2>🔥 Your Streak</h2>
+
+<div id="streakContent">
+
+Loading...
+
+</div>
+
+<br>
+
+<button onclick="streakPopup.style.display='none'">
+
+Close
+
+</button>
+
+</div>
+
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -257,6 +280,44 @@ requestList.innerHTML=html;
 myRequests.style.display="flex";
 
     }
+
+async function loadStreak(){
+
+    const { data,error } = await supabaseClient
+    .from("profile1")
+    .select("*")
+    .eq("user_id",userId)
+    .single();
+
+    if(error){
+        alert(error.message);
+        return;
+    }
+
+    streakContent.innerHTML=`
+
+<h3>🔥 Current Streak</h3>
+
+<p>${data.current_streak} Day(s)</p>
+
+<br>
+
+<h3>🏆 Longest Streak</h3>
+
+<p>${data.longest_streak} Day(s)</p>
+
+<br>
+
+<h3>🙏 Total Prayers</h3>
+
+<p>${data.prayed_count}</p>
+
+`;
+
+    streakPopup.style.display="flex";
+
+}
+    
 //==============================
 // SKIP PRAYER
 //==============================
@@ -285,7 +346,7 @@ async function skipPrayer(){
 
 async function prayDone(){
 
-    // Save prayer action
+    // Save action
     await supabaseClient
     .from("prayer_actions")
     .insert([{
@@ -302,18 +363,69 @@ async function prayDone(){
         }
     );
 
-    // Get current profile
-    const { data } = await supabaseClient
+    // Get user profile
+    const { data: profile } = await supabaseClient
     .from("profile1")
-    .select("prayed_count")
+    .select("*")
     .eq("user_id",userId)
     .single();
 
-    // Update prayed count
+    const today = new Date().toISOString().split("T")[0];
+
+    let currentStreak = profile.current_streak || 0;
+    let longestStreak = profile.longest_streak || 0;
+    let prayedCount = profile.prayed_count || 0;
+
+    if(profile.last_prayed_date){
+
+        const last = new Date(profile.last_prayed_date);
+        const now = new Date(today);
+
+        const diff =
+        Math.floor(
+            (now-last)/(1000*60*60*24)
+        );
+
+        if(diff===0){
+
+            // Already prayed today
+
+        }else if(diff===1){
+
+            currentStreak++;
+
+        }else{
+
+            currentStreak=1;
+
+        }
+
+    }else{
+
+        currentStreak=1;
+
+    }
+
+    if(currentStreak>longestStreak){
+
+        longestStreak=currentStreak;
+
+    }
+
+    prayedCount++;
+
     await supabaseClient
     .from("profile1")
     .update({
-        prayed_count:(data.prayed_count || 0)+1
+
+        current_streak:currentStreak,
+
+        longest_streak:longestStreak,
+
+        prayed_count:prayedCount,
+
+        last_prayed_date:today
+
     })
     .eq("user_id",userId);
 
@@ -395,5 +507,6 @@ submitBtn.onclick = () => {
     submit.style.display = "flex";
 };
     requestTab.onclick=loadMyRequests;
+    streakBtn.onclick = loadStreak;
 </script>
 </body></html>
