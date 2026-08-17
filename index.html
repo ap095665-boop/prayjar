@@ -2325,4 +2325,245 @@ function initEvents(){
     const wantsReminder = document.getElementById('noteReminderCheck').checked;
     if(!title){ toast('Enter a note title'); return; }
     let reminderTime = null;
- 
+    if(wantsReminder){
+      const dVal = document.getElementById('noteRemDate').value;
+      const tVal = document.getElementById('noteRemTime').value;
+      if(!dVal || !tVal){ toast('Enter a reminder date and time'); return; }
+      const [y,m,d] = dVal.split('-').map(Number);
+      const [hh,mm] = tVal.split(':').map(Number);
+      const dt = new Date(y, m-1, d, hh, mm);
+      if(isNaN(dt.getTime())){ toast('Invalid reminder date/time'); return; }
+      reminderTime = dt.getTime();
+    }
+    try{
+      if(state.editingNoteId){
+        await updateNote(state.editingNoteId, title, details, reminderTime);
+        toast('Note updated');
+      } else {
+        await addNote(title, details, reminderTime);
+        toast('Note saved');
+      }
+      closeModal('noteFormModal');
+      renderNotesTab();
+      renderReminderBanner();
+    }catch(err){ toast('Could not save note.'); }
+  });
+  document.getElementById('notesList').addEventListener('click', async (e)=>{
+    const doneBtn = e.target.closest('[data-done-note]');
+    const editBtn = e.target.closest('[data-edit-note]');
+    const delBtn = e.target.closest('[data-del-note]');
+    if(doneBtn){
+      const id = doneBtn.getAttribute('data-done-note');
+      try{ await toggleNoteDone(id); renderNotesTab(); renderReminderBanner(); }
+      catch(err){ toast('Could not update note.'); }
+    } else if(editBtn){
+      const id = editBtn.getAttribute('data-edit-note');
+      const rec = state.notes.find(n=>n.id===id);
+      if(!rec) return;
+      state.editingNoteId = id;
+      document.getElementById('noteFormTitle').textContent = 'Edit Note';
+      document.getElementById('noteTitle').value = rec.title;
+      document.getElementById('noteDetails').value = rec.details || '';
+      const hasRem = !!rec.reminderTime;
+      document.getElementById('noteReminderCheck').checked = hasRem;
+      document.getElementById('noteReminderFields').classList.toggle('hidden', !hasRem);
+      if(hasRem){
+        const dt = new Date(rec.reminderTime);
+        document.getElementById('noteRemDate').value = dateKey(dt);
+        document.getElementById('noteRemTime').value = pad2(dt.getHours())+':'+pad2(dt.getMinutes());
+      } else {
+        document.getElementById('noteRemDate').value = '';
+        document.getElementById('noteRemTime').value = '';
+      }
+      openModal('noteFormModal');
+    } else if(delBtn){
+      const id = delBtn.getAttribute('data-del-note');
+      showConfirm('Delete note?', 'This note will be permanently removed.', async ()=>{
+        try{ await deleteNote(id); renderNotesTab(); renderReminderBanner(); toast('Note deleted'); }
+        catch(err){ toast('Could not delete. Try again.'); }
+      });
+    }
+  });
+
+  // Reminder banner actions (delegation)
+  document.getElementById('reminderBanner').addEventListener('click', async (e)=>{
+    const doneBtn = e.target.closest('[data-rem-done]');
+    const snoozeBtn = e.target.closest('[data-rem-snooze]');
+    if(doneBtn){
+      const id = doneBtn.getAttribute('data-rem-done');
+      try{ await toggleNoteDone(id); renderReminderBanner(); renderNotesTab(); }
+      catch(err){ toast('Could not update reminder.'); }
+    } else if(snoozeBtn){
+      const id = snoozeBtn.getAttribute('data-rem-snooze');
+      const mins = parseInt(snoozeBtn.getAttribute('data-mins'),10);
+      try{ await snoozeNote(id, mins); }
+      catch(err){ toast('Could not snooze reminder.'); }
+    }
+  });
+
+  // ---- Udhaar (credit tracking) ----
+
+  // Add customer
+  document.getElementById('addCustomerBtn').addEventListener('click', ()=>{
+    state.editingCustomerId = null;
+    document.getElementById('customerFormTitle').textContent = 'Add Customer';
+    document.getElementById('customerName').value = '';
+    document.getElementById('customerPhone').value = '';
+    openModal('customerFormModal');
+  });
+  document.getElementById('saveCustomerBtn').addEventListener('click', async ()=>{
+    const name = document.getElementById('customerName').value.trim();
+    const phone = document.getElementById('customerPhone').value.trim();
+    if(!name){ toast('Enter a customer name'); return; }
+    try{
+      if(state.editingCustomerId){
+        await updateCustomer(state.editingCustomerId, name, phone);
+        toast('Customer updated');
+      } else {
+        await addCustomer(name, phone);
+        toast('Customer added');
+      }
+      closeModal('customerFormModal');
+      renderUdhaarTab();
+      if(state.activeCustomerId) renderCustomerDetail();
+    }catch(err){ toast('Could not save customer.'); }
+  });
+
+  // Open customer detail (delegation on the list)
+  document.getElementById('customerList').addEventListener('click', (e)=>{
+    const item = e.target.closest('[data-open-customer]');
+    if(!item) return;
+    state.activeCustomerId = item.getAttribute('data-open-customer');
+    renderCustomerDetail();
+    openModal('customerDetailModal');
+  });
+
+  // Add credit / record payment (open the shared entry modal)
+  document.getElementById('addCreditBtn').addEventListener('click', ()=>{
+    state.udhaarEntryMode = 'credit';
+    document.getElementById('udhaarEntryTitle').textContent = 'Add Credit (Udhaar)';
+    document.getElementById('udhaarEntryAmount').value = '';
+    document.getElementById('udhaarEntryNote').value = '';
+    openModal('udhaarEntryModal');
+  });
+  document.getElementById('addPaymentBtn').addEventListener('click', ()=>{
+    state.udhaarEntryMode = 'payment';
+    document.getElementById('udhaarEntryTitle').textContent = 'Record Payment';
+    document.getElementById('udhaarEntryAmount').value = '';
+    document.getElementById('udhaarEntryNote').value = '';
+    openModal('udhaarEntryModal');
+  });
+  document.getElementById('saveUdhaarEntryBtn').addEventListener('click', async ()=>{
+    const amt = parseFloat(document.getElementById('udhaarEntryAmount').value);
+    const note = document.getElementById('udhaarEntryNote').value.trim();
+    if(isNaN(amt) || amt <= 0){ toast('Enter a valid amount'); return; }
+    if(!state.activeCustomerId){ toast('No customer selected'); return; }
+    try{
+      await addUdhaarEntry(state.activeCustomerId, state.udhaarEntryMode, amt, note);
+      closeModal('udhaarEntryModal');
+      renderCustomerDetail();
+      renderUdhaarTab();
+      toast(state.udhaarEntryMode==='credit' ? 'Credit added' : 'Payment recorded');
+    }catch(err){ toast('Could not save entry.'); }
+  });
+
+  // Delete a single udhaar entry (delegation inside the detail modal)
+  document.getElementById('customerEntryList').addEventListener('click', (e)=>{
+    const delBtn = e.target.closest('[data-del-entry]');
+    if(!delBtn) return;
+    const id = delBtn.getAttribute('data-del-entry');
+    showConfirm('Delete this entry?', 'This transaction will be permanently removed from the customer\'s history.', async ()=>{
+      try{
+        await deleteUdhaarEntry(id);
+        renderCustomerDetail();
+        renderUdhaarTab();
+        toast('Entry deleted');
+      }catch(err){ toast('Could not delete. Try again.'); }
+    });
+  });
+
+  // WhatsApp reminder (opens WhatsApp with a pre-filled message; requires the device to have WhatsApp / internet)
+  document.getElementById('whatsappRemindBtn').addEventListener('click', ()=>{
+    const c = state.customers.find(x=>x.id===state.activeCustomerId);
+    if(!c || !c.phone) return;
+    const bal = customerBalance(c.id);
+    const digits = normalizePhoneForWhatsApp(c.phone);
+    const msg = 'Hi '+c.name+', your pending balance is '+money(bal)+'. Please pay at your convenience. Thank you!';
+    const url = 'https://wa.me/'+digits+'?text='+encodeURIComponent(msg);
+    window.open(url, '_blank');
+  });
+
+  // Edit / delete the currently open customer
+  document.getElementById('editCustomerBtn').addEventListener('click', ()=>{
+    const c = state.customers.find(x=>x.id===state.activeCustomerId);
+    if(!c) return;
+    state.editingCustomerId = c.id;
+    document.getElementById('customerFormTitle').textContent = 'Edit Customer';
+    document.getElementById('customerName').value = c.name;
+    document.getElementById('customerPhone').value = c.phone || '';
+    openModal('customerFormModal');
+  });
+  document.getElementById('deleteCustomerBtn').addEventListener('click', ()=>{
+    const c = state.customers.find(x=>x.id===state.activeCustomerId);
+    if(!c) return;
+    showConfirm('Delete customer?', 'This will remove '+c.name+' and their entire udhaar history. This cannot be undone.', async ()=>{
+      try{
+        await deleteCustomer(c.id);
+        state.activeCustomerId = null;
+        closeModal('customerDetailModal');
+        renderUdhaarTab();
+        toast('Customer deleted');
+      }catch(err){ toast('Could not delete customer.'); }
+    });
+  });
+}
+
+/* =========================================================
+   11. INITIALIZATION
+   ========================================================= */
+async function init(){
+  try{
+    await openDB();
+    const [sales, stock, notes, customers, udhaarEntries] = await Promise.all([
+      dbGetAll('sales'), dbGetAll('stockPurchases'), dbGetAll('notes'),
+      dbGetAll('customers'), dbGetAll('udhaarEntries')
+    ]);
+    state.sales = sales || [];
+    state.stock = stock || [];
+    state.notes = notes || [];
+    state.customers = customers || [];
+    state.udhaarEntries = udhaarEntries || [];
+    await loadStoreDetails();
+  }catch(err){
+    toast('Storage unavailable. Some features may not work.');
+  }
+  initEvents();
+  renderAll();
+  switchTab('sales');
+  updateAppbarHeight();
+  // Recompute after fonts/layout settle (store name length, font loading, etc.)
+  setTimeout(updateAppbarHeight, 300);
+  // Periodic reminder check: refreshes the banner and shows the blocking
+  // popup for any newly-due reminder (also re-checked on focus/visibility).
+  checkDueReminders();
+  setInterval(reminderTick, 15000);
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+})();
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js')
+        .catch(err => console.log('Service worker registration failed:', err));
+    });
+  }
+  
+</script>
+</body>
+</html>
