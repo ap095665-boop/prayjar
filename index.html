@@ -33,10 +33,9 @@
     --radius-lg:20px;
     --radius-md:14px;
     --radius-sm:10px;
-    --appbar-h:64px;
   }
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;overflow-x:clip;width:100%;}
+  html,body{margin:0;padding:0;overflow-x:hidden;width:100%;}
   body{
     background:var(--bg);
     color:var(--ink);
@@ -109,10 +108,6 @@
   .revenue-card{
     background:linear-gradient(155deg,var(--primary) 0%, var(--primary-dark) 100%);
     color:#fff;padding:20px 20px 18px;
-    position:sticky;
-    top:var(--appbar-h);
-    z-index:15;
-    box-shadow:0 6px 18px rgba(19,32,25,0.16);
   }
   .revenue-card .label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.85;}
   .revenue-card .amount{
@@ -386,61 +381,6 @@
   }
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-  /* Reminder lock state — blocks background interaction while the reminder popup is active */
-  body.reminder-locked{overflow:hidden;}
-  body.reminder-locked .appbar,
-  body.reminder-locked main,
-  body.reminder-locked .bottomnav,
-  body.reminder-locked .modal-overlay{
-    pointer-events:none;
-  }
-
-  /* Centered blocking reminder popup */
-  .reminder-popup-overlay{
-    position:fixed;inset:0;z-index:500;
-    background:rgba(10,20,15,0.62);
-    display:flex;align-items:center;justify-content:center;
-    padding:20px;
-    opacity:0;pointer-events:none;
-    transition:opacity .18s ease;
-  }
-  .reminder-popup-overlay.hidden{display:none;}
-  .reminder-popup-overlay.show{opacity:1;pointer-events:auto;}
-  .reminder-popup-dialog{
-    background:var(--surface);
-    width:100%;max-width:360px;
-    border-radius:24px;
-    padding:30px 22px calc(22px + env(safe-area-inset-bottom));
-    text-align:center;
-    box-shadow:var(--shadow-lg);
-    transform:scale(0.86) translateY(12px);
-    transition:transform .22s cubic-bezier(.2,.8,.3,1);
-    max-height:88vh;overflow-y:auto;
-  }
-  .reminder-popup-overlay.show .reminder-popup-dialog{transform:scale(1) translateY(0);}
-  .reminder-popup-icon{font-size:44px;line-height:1;margin-bottom:8px;}
-  .reminder-popup-heading{
-    font-size:13px;font-weight:800;letter-spacing:.12em;color:var(--danger);
-    text-transform:uppercase;margin-bottom:12px;
-  }
-  .reminder-popup-title{font-size:21px;font-weight:800;color:var(--ink);margin-bottom:6px;word-break:break-word;}
-  .reminder-popup-details{font-size:14px;color:var(--ink-soft);margin-bottom:10px;word-break:break-word;}
-  .reminder-popup-details.hidden{display:none;}
-  .reminder-popup-due{
-    font-size:12px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;
-    letter-spacing:.06em;margin-bottom:22px;
-  }
-  .reminder-popup-actions{display:flex;flex-direction:column;gap:10px;}
-  .reminder-popup-btn{
-    width:100%;padding:15px;border-radius:14px;border:none;
-    font-size:15px;font-weight:800;letter-spacing:.02em;min-height:48px;
-    color:var(--ink);background:var(--surface-alt);border:1px solid var(--border);
-  }
-  .reminder-popup-btn:active{transform:scale(0.97);}
-  .reminder-popup-btn.done{background:var(--primary);color:#fff;border:none;box-shadow:0 8px 18px rgba(14,124,85,0.32);}
-  .reminder-popup-snooze-row{display:flex;gap:10px;}
-  .reminder-popup-snooze-row .reminder-popup-btn{padding:14px 4px;font-size:13.5px;}
-
   .settings-list button{width:100%;margin-bottom:10px;text-align:left;padding:14px;border-radius:var(--radius-md);
     border:1px solid var(--border);background:var(--surface-alt);font-size:14.5px;font-weight:700;display:flex;
     align-items:center;gap:10px;}
@@ -476,9 +416,81 @@
     background:var(--surface-alt);font-size:13.5px;font-weight:700;color:var(--ink-soft);
     margin-bottom:14px;
   }
+
+  /* Activation screen */
+  .auth-screen{
+    position:fixed;inset:0;z-index:9999;
+    background:linear-gradient(155deg,var(--primary) 0%, var(--primary-dark) 100%);
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;
+  }
+  .auth-card{
+    background:var(--surface);border-radius:var(--radius-lg);
+    padding:30px 22px;width:100%;max-width:400px;
+    box-shadow:var(--shadow-lg);text-align:center;
+  }
+  .auth-logo{font-size:42px;margin-bottom:6px;}
+  .auth-title{font-size:21px;font-weight:800;margin-bottom:6px;letter-spacing:-0.01em;}
+  .auth-sub{font-size:13.5px;color:var(--ink-soft);margin-bottom:20px;}
+  .auth-card .field{text-align:left;}
+  .auth-error{
+    background:var(--danger-tint);color:var(--danger);font-size:13px;font-weight:700;
+    border-radius:10px;padding:10px 12px;margin-bottom:14px;text-align:left;
+    animation:slideDown .2s ease;
+  }
+  .auth-foot{font-size:11.5px;color:var(--ink-faint);margin-top:16px;}
+  body.auth-locked{overflow:hidden;}
+
+  /* Blocking reminder popup (centered, modal) */
+  .reminder-lock-overlay{
+    position:fixed;inset:0;z-index:500;
+    background:rgba(15,25,20,0.55);
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;
+  }
+  .reminder-lock-card{
+    background:var(--surface);border-radius:var(--radius-lg);
+    padding:28px 22px;width:100%;max-width:380px;
+    box-shadow:var(--shadow-lg);text-align:center;
+    animation:slideDown .25s ease;
+  }
+  .reminder-lock-icon{font-size:38px;margin-bottom:6px;}
+  .reminder-lock-label{
+    font-size:12px;font-weight:700;color:var(--danger);letter-spacing:.06em;
+    text-transform:uppercase;margin-bottom:8px;
+  }
+  .reminder-lock-title{font-size:19px;font-weight:800;margin-bottom:6px;word-break:break-word;}
+  .reminder-lock-details{font-size:13.5px;color:var(--ink-soft);margin-bottom:6px;word-break:break-word;}
+  .reminder-lock-due{font-size:12px;color:var(--ink-faint);margin-bottom:18px;}
+  .reminder-lock-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .reminder-lock-actions button{
+    flex:1;min-width:70px;padding:11px 6px;border-radius:12px;border:none;
+    background:var(--surface-alt);font-size:13px;font-weight:700;color:var(--ink);
+    box-shadow:var(--shadow);
+  }
+  .reminder-lock-actions button:active{transform:scale(0.95);}
+  .reminder-lock-actions button.done-btn{
+    background:var(--primary);color:#fff;flex-basis:100%;margin-bottom:6px;
+  }
 </style>
 </head>
 <body>
+
+<!-- Activation / License Screen (blocks the app until authorized) -->
+<div class="auth-screen" id="activationScreen">
+  <div class="auth-card">
+    <div class="auth-logo">🔐</div>
+    <h1 class="auth-title">Activate Shop Manager</h1>
+    <p class="auth-sub">Enter your activation code to unlock the app.</p>
+    <div id="activationError" class="auth-error hidden"></div>
+    <div class="field">
+      <label for="activationCodeInput">Activation code</label>
+      <input type="text" id="activationCodeInput" placeholder="e.g. SSM-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    </div>
+    <button type="button" class="full-btn" id="activateBtn">Activate</button>
+    <p class="auth-foot">Need help? Contact your Shop Manager provider.</p>
+  </div>
+</div>
 
 <header class="appbar">
   <button type="button" class="store-name-btn" id="storeNameBtn" aria-label="Open store website">
@@ -853,21 +865,19 @@
   </div>
 </div>
 
-<!-- Blocking Centered Reminder Popup (highest priority UI layer) -->
-<div class="reminder-popup-overlay hidden" id="reminderPopupOverlay" role="alertdialog" aria-modal="true" aria-labelledby="reminderPopupTitle">
-  <div class="reminder-popup-dialog">
-    <div class="reminder-popup-icon">🔔</div>
-    <div class="reminder-popup-heading">Reminder</div>
-    <div class="reminder-popup-title" id="reminderPopupTitle"></div>
-    <div class="reminder-popup-details hidden" id="reminderPopupDetails"></div>
-    <div class="reminder-popup-due">Due now</div>
-    <div class="reminder-popup-actions">
-      <button type="button" class="reminder-popup-btn done" data-rpop-action="done">DONE</button>
-      <div class="reminder-popup-snooze-row">
-        <button type="button" class="reminder-popup-btn" data-rpop-action="snooze10">+10 MIN</button>
-        <button type="button" class="reminder-popup-btn" data-rpop-action="snooze60">+1 HOUR</button>
-      </div>
-      <button type="button" class="reminder-popup-btn" data-rpop-action="tomorrow">TOMORROW</button>
+<!-- Blocking Reminder Popup (centered, replaces old inline banner) -->
+<div class="reminder-lock-overlay hidden" id="reminderLockOverlay">
+  <div class="reminder-lock-card">
+    <div class="reminder-lock-icon">🔔</div>
+    <div class="reminder-lock-label">Reminder</div>
+    <div class="reminder-lock-title" id="reminderPopupTitle"></div>
+    <div class="reminder-lock-details hidden" id="reminderPopupDetails"></div>
+    <div class="reminder-lock-due">Due now</div>
+    <div class="reminder-lock-actions">
+      <button type="button" class="done-btn" data-rem-done="" id="reminderDoneBtn">Done</button>
+      <button type="button" data-rem-snooze="" data-mins="10">+10m</button>
+      <button type="button" data-rem-snooze="" data-mins="60">+1h</button>
+      <button type="button" data-rem-snooze="" data-mins="1440">Tomorrow</button>
     </div>
   </div>
 </div>
@@ -897,12 +907,7 @@ const state = {
   activeCustomerId: null,    // customer currently open in the detail modal
   udhaarEntryMode: 'credit', // 'credit' or 'payment', for the entry modal
   confirmCallback: null,
-  calc: { display:'0', expr:'', first:null, operator:null, waitingSecond:false },
-  // Blocking reminder popup state
-  reminderPopupActive: false,   // true while the centered popup is being shown/handled
-  reminderQueue: [],            // ids of due reminders queued to show, one at a time
-  currentReminderPopupId: null, // note id currently displayed in the popup
-  lockedScrollY: 0              // scroll position saved while the app is locked
+  calc: { display:'0', expr:'', first:null, operator:null, waitingSecond:false }
 };
 
 /* =========================================================
@@ -1022,6 +1027,203 @@ async function getSetting(key){
 }
 async function setSetting(key, value){
   await dbPut('settings', { key, value });
+}
+
+/* =========================================================
+   1b. LICENSING / AUTHORIZATION
+   Talks only to the public Apps Script Web App endpoint below.
+   No admin secret or server credential is ever stored here.
+   Authorization info (licenseId/deviceId/token/expiresAt) is kept
+   in the existing 'settings' store - it never touches sales/stock/
+   notes/customers/udhaarEntries.
+   ========================================================= */
+const LICENSE_API_URL = 'https://script.google.com/macros/s/AKfycbxSoaMW8MHt2TU1aU3Qjet4f7gs8dGrMJY0v6_z58s4RfNdtYdX56vWGWE1eqZl5WRQRA/exec';
+const REVALIDATE_INTERVAL_MS = 6 * 60 * 60 * 1000; // revalidate at most every 6 hours / once per session
+
+const auth = {
+  deviceId: null,
+  licenseId: null,
+  token: null,
+  expiresAt: null,
+  shopName: null,
+  authorized: false
+};
+
+function genDeviceId(){
+  let id;
+  try{
+    id = crypto.randomUUID();
+  }catch(e){
+    // Fallback for browsers without crypto.randomUUID - not cryptographically
+    // strong, but only needs to be stable and non-invasive, not secret.
+    id = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'.replace(/x/g, ()=>{
+      return Math.floor(Math.random()*16).toString(16);
+    });
+  }
+  return 'SSM-DEVICE-' + id;
+}
+
+async function loadAuthFromSettings(){
+  auth.deviceId = await getSetting('authDeviceId');
+  if(!auth.deviceId){
+    auth.deviceId = genDeviceId();
+    await setSetting('authDeviceId', auth.deviceId);
+  }
+  auth.licenseId = await getSetting('authLicenseId');
+  auth.token = await getSetting('authToken');
+  auth.expiresAt = await getSetting('authExpiresAt');
+  auth.shopName = await getSetting('authShopName');
+}
+
+async function saveAuthToSettings(){
+  await setSetting('authLicenseId', auth.licenseId);
+  await setSetting('authToken', auth.token);
+  await setSetting('authExpiresAt', auth.expiresAt);
+  await setSetting('authShopName', auth.shopName);
+  await setSetting('authLastValidated', Date.now());
+}
+
+async function clearAuthFromSettings(){
+  auth.licenseId = null; auth.token = null; auth.expiresAt = null;
+  await setSetting('authLicenseId', null);
+  await setSetting('authToken', null);
+  await setSetting('authExpiresAt', null);
+}
+
+function friendlyAuthError(raw){
+  const s = String(raw || '').toLowerCase();
+  if(!s) return 'Could not reach the activation server. Please check your connection and try again.';
+  if(s.includes('expire')) return 'Your license has expired. Please renew to continue.';
+  if(s.includes('revoke')) return 'This license has been revoked. Please contact support.';
+  if(s.includes('device')) return 'This activation code is already active on a different device.';
+  if(s.includes('used') || s.includes('already')) return 'This activation code has already been used.';
+  if(s.includes('network') || s.includes('fetch') || s.includes('timeout')) return 'Could not reach the activation server. Please check your connection and try again.';
+  if(s.includes('invalid') || s.includes('not found') || s.includes('unauthor')) return 'That activation code is not valid. Please check and try again.';
+  return 'Activation could not be completed. Please check your code and try again.';
+}
+
+async function callLicenseApi(payload){
+  try{
+    const res = await fetch(LICENSE_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight against Apps Script
+      body: JSON.stringify(payload)
+    });
+    if(!res.ok) return { ok:false, code:'network' };
+    return await res.json();
+  }catch(err){
+    return { ok:false, code:'network' };
+  }
+}
+
+async function activateLicense(code){
+  const res = await callLicenseApi({ action:'activate', activationCode: code, deviceId: auth.deviceId });
+  if(res && res.ok){
+    auth.licenseId = res.licenseId;
+    auth.token = res.token;
+    auth.expiresAt = res.expiresAt;
+    auth.shopName = res.shopName || null;
+    await saveAuthToSettings();
+    auth.authorized = true;
+    return { ok:true };
+  }
+  return { ok:false, message: friendlyAuthError(res && (res.error || res.code || res.message)) };
+}
+
+async function validateLicense(){
+  if(!auth.licenseId || !auth.token) return { ok:false, code:'invalid' };
+  return await callLicenseApi({ action:'validate', licenseId: auth.licenseId, deviceId: auth.deviceId, token: auth.token });
+}
+
+function showActivationScreen(message){
+  document.getElementById('activationScreen').classList.remove('hidden');
+  document.body.classList.add('auth-locked');
+  setActivationError(message || '');
+}
+function hideActivationScreen(){
+  document.getElementById('activationScreen').classList.add('hidden');
+  document.body.classList.remove('auth-locked');
+}
+function setActivationError(msg){
+  const el = document.getElementById('activationError');
+  el.textContent = msg || '';
+  el.classList.toggle('hidden', !msg);
+}
+function setActivationLoading(loading){
+  const btn = document.getElementById('activateBtn');
+  btn.disabled = loading;
+  btn.textContent = loading ? 'Activating…' : 'Activate';
+}
+async function handleActivateClick(){
+  const input = document.getElementById('activationCodeInput');
+  const code = input.value.trim();
+  if(!code){ setActivationError('Please enter your activation code.'); return; }
+  setActivationError('');
+  setActivationLoading(true);
+  try{
+    const result = await activateLicense(code);
+    if(result.ok){
+      hideActivationScreen();
+      toast('Activated successfully');
+    } else {
+      setActivationError(result.message);
+    }
+  }catch(err){
+    setActivationError('Could not reach the activation server. Please check your connection and try again.');
+  }
+  setActivationLoading(false);
+}
+
+// Runs on every startup. Trusts a still-fresh local session immediately
+// (no flash/lockout), and revalidates with the server at most once per
+// session/interval. Never deletes sales/stock/notes/customers/udhaar data.
+async function initAuth(){
+  try{
+    await loadAuthFromSettings();
+  }catch(err){
+    // Settings unavailable for some reason - fail safe to the activation screen
+    showActivationScreen();
+    return;
+  }
+
+  if(!auth.licenseId || !auth.token){
+    showActivationScreen();
+    return;
+  }
+
+  const lastValidated = await getSetting('authLastValidated');
+  const now = Date.now();
+  const needsRevalidate = !lastValidated || (now - lastValidated) > REVALIDATE_INTERVAL_MS;
+
+  if(!needsRevalidate){
+    auth.authorized = true;
+    hideActivationScreen();
+    return;
+  }
+
+  try{
+    const res = await validateLicense();
+    if(res && res.ok){
+      if(res.expiresAt) auth.expiresAt = res.expiresAt;
+      if(res.shopName) auth.shopName = res.shopName;
+      await saveAuthToSettings();
+      auth.authorized = true;
+      hideActivationScreen();
+    } else if(res && (res.code === 'network')){
+      // Temporary network failure - let the existing valid session continue
+      // rather than locking the user out or touching their local data.
+      auth.authorized = true;
+      hideActivationScreen();
+    } else {
+      await clearAuthFromSettings();
+      auth.authorized = false;
+      showActivationScreen(friendlyAuthError(res && (res.error || res.code || res.message)));
+    }
+  }catch(err){
+    // Unexpected/network error - do not destroy local data or lock the user out
+    auth.authorized = true;
+    hideActivationScreen();
+  }
 }
 
 /* =========================================================
@@ -1339,161 +1541,6 @@ async function snoozeNote(id, minutes){
   rec.snoozedUntil = Date.now() + minutes*60000;
   await dbPut('notes', rec);
   renderReminderBanner();
-}
-
-/* =========================================================
-   5a. BLOCKING CENTERED REMINDER POPUP
-   Preserves the existing reminderTime/done/snoozedUntil data model.
-   The centered popup is the primary due-reminder interaction; the
-   existing banner (renderReminderBanner) is kept in sync alongside it.
-   ========================================================= */
-
-// Returns all notes that are currently due, oldest first. Does not mutate state.
-function getDueReminders(){
-  const now = Date.now();
-  return state.notes
-    .filter(n => n.reminderTime && !n.done && n.reminderTime <= now && (!n.snoozedUntil || n.snoozedUntil <= now))
-    .sort((a,b)=> a.reminderTime - b.reminderTime);
-}
-
-// Attempts a short attention-grabbing vibration. Safe no-op if unsupported.
-function vibrateReminder(){
-  try{
-    if(navigator.vibrate){ navigator.vibrate([250,120,250]); }
-  }catch(err){ /* vibration unsupported or blocked — ignore */ }
-}
-
-// Toggles inert + aria-hidden on background regions so they cannot be
-// focused or interacted with while the reminder popup is active.
-function setAppInert(flag){
-  const selectors = ['.appbar', 'main', '.bottomnav', '.modal-overlay'];
-  selectors.forEach(sel=>{
-    document.querySelectorAll(sel).forEach(el=>{
-      try{ el.inert = flag; }catch(err){ /* inert unsupported — pointer-events CSS still blocks input */ }
-      el.setAttribute('aria-hidden', flag ? 'true' : 'false');
-    });
-  });
-}
-
-// Locks scrolling and background interaction while a reminder is being shown.
-function lockAppForReminder(){
-  if(document.body.classList.contains('reminder-locked')) return; // already locked
-  state.lockedScrollY = window.scrollY || window.pageYOffset || 0;
-  document.body.classList.add('reminder-locked');
-  document.body.style.position = 'fixed';
-  document.body.style.top = (-state.lockedScrollY) + 'px';
-  document.body.style.left = '0';
-  document.body.style.right = '0';
-  setAppInert(true);
-}
-
-// Restores scrolling and interaction exactly as it was before the lock.
-function unlockAppAfterReminder(){
-  document.body.classList.remove('reminder-locked');
-  document.body.style.position = '';
-  document.body.style.top = '';
-  document.body.style.left = '';
-  document.body.style.right = '';
-  setAppInert(false);
-  window.scrollTo(0, state.lockedScrollY || 0);
-  state.reminderPopupActive = false;
-  state.currentReminderPopupId = null;
-}
-
-// Renders and shows the popup for a single note. Assumes the note is due.
-function renderReminderPopup(note){
-  state.currentReminderPopupId = note.id;
-  document.getElementById('reminderPopupTitle').textContent = note.title;
-  const detailsEl = document.getElementById('reminderPopupDetails');
-  if(note.details){
-    detailsEl.textContent = note.details;
-    detailsEl.classList.remove('hidden');
-  } else {
-    detailsEl.textContent = '';
-    detailsEl.classList.add('hidden');
-  }
-  const overlay = document.getElementById('reminderPopupOverlay');
-  overlay.classList.remove('hidden');
-  // Force a reflow so the entrance transition plays every time it's shown.
-  void overlay.offsetWidth;
-  requestAnimationFrame(()=> overlay.classList.add('show'));
-}
-
-function closeReminderPopupUI(){
-  const overlay = document.getElementById('reminderPopupOverlay');
-  overlay.classList.remove('show');
-  overlay.classList.add('hidden');
-}
-
-// Shows the next queued due reminder, if any. Unlocks the app once the
-// queue is empty. Skips entries that are no longer due (handled/deleted
-// through another path) without losing any other queued reminder.
-function showNextReminder(){
-  while(state.reminderQueue.length > 0){
-    const id = state.reminderQueue.shift();
-    const note = state.notes.find(n=>n.id===id);
-    const now = Date.now();
-    const stillDue = note && note.reminderTime && !note.done && note.reminderTime <= now && (!note.snoozedUntil || note.snoozedUntil <= now);
-    if(!stillDue) continue;
-    state.reminderPopupActive = true;
-    lockAppForReminder();
-    renderReminderPopup(note);
-    vibrateReminder();
-    return;
-  }
-  // Nothing left to show.
-  closeReminderPopupUI();
-  unlockAppAfterReminder();
-}
-
-// Checks for newly-due reminders and starts the blocking popup queue.
-// Does nothing if a popup is already being shown/handled, so the same
-// due reminder never reopens or re-vibrates while the user is looking at it.
-function checkDueReminders(){
-  if(state.reminderPopupActive) return;
-  const due = getDueReminders();
-  if(due.length === 0) return;
-  state.reminderQueue = due.map(n=>n.id);
-  showNextReminder();
-}
-
-// Handles DONE / +10 MIN / +1 HOUR / TOMORROW from the popup.
-async function handleReminderAction(action){
-  const id = state.currentReminderPopupId;
-  if(!id){ closeReminderPopupUI(); unlockAppAfterReminder(); return; }
-  try{
-    if(action === 'done'){
-      await toggleNoteDone(id);
-    } else if(action === 'snooze10'){
-      await snoozeNote(id, 10);
-    } else if(action === 'snooze60'){
-      await snoozeNote(id, 60);
-    } else if(action === 'tomorrow'){
-      await snoozeNote(id, 1440);
-    }
-  }catch(err){
-    toast('Could not update reminder. Please try again.');
-  }
-  renderNotesTab();
-  renderReminderBanner();
-  closeReminderPopupUI();
-  showNextReminder();
-}
-
-// Runs both the (legacy) banner refresh and the blocking popup check.
-// Called on the periodic interval and whenever the app regains focus.
-function reminderTick(){
-  renderReminderBanner();
-  checkDueReminders();
-}
-
-// Keeps the sticky Today's Sales card offset correct beneath the app bar
-// across different screen sizes and dynamic content (e.g. long store names).
-function updateAppbarHeight(){
-  const appbar = document.querySelector('.appbar');
-  if(!appbar) return;
-  const h = appbar.offsetHeight;
-  if(h > 0){ document.documentElement.style.setProperty('--appbar-h', h + 'px'); }
 }
 
 /* =========================================================
@@ -1875,25 +1922,57 @@ function renderNotesTab(){
   });
   wrap.innerHTML = html;
 }
-function renderReminderBanner(){
+// The old in-page reminder banner has been replaced by a centered, blocking
+// popup (#reminderLockOverlay). This function now finds due reminders and
+// shows them one at a time as a blocking popup instead of writing into the
+// (now unused/empty) #reminderBanner element.
+let activeReminderNoteId = null;
+
+function dueReminders(){
   const now = Date.now();
-  const due = state.notes.filter(n => n.reminderTime && !n.done && n.reminderTime <= now && (!n.snoozedUntil || n.snoozedUntil <= now));
+  return state.notes
+    .filter(n => n.reminderTime && !n.done && n.reminderTime <= now && (!n.snoozedUntil || n.snoozedUntil <= now))
+    .sort((a,b)=> a.reminderTime - b.reminderTime);
+}
+
+function renderReminderBanner(){
   const wrap = document.getElementById('reminderBanner');
-  if(due.length === 0){ wrap.innerHTML = ''; return; }
-  let html = '';
-  due.forEach(n => {
-    html += '<div class="reminder-card">'+
-      '<div class="rtitle">🔔 Reminder</div>'+
-      '<div class="rnote">'+escapeHtml(n.title)+'</div>'+
-      '<div class="rdue">Due now</div>'+
-      '<div class="reminder-actions">'+
-        '<button type="button" class="done-btn" data-rem-done="'+n.id+'">Done</button>'+
-        '<button type="button" data-rem-snooze="'+n.id+'" data-mins="10">+10m</button>'+
-        '<button type="button" data-rem-snooze="'+n.id+'" data-mins="60">+1h</button>'+
-        '<button type="button" data-rem-snooze="'+n.id+'" data-mins="1440">Tomorrow</button>'+
-      '</div></div>';
+  if(wrap) wrap.innerHTML = ''; // legacy container, kept empty/unused
+  const due = dueReminders();
+
+  if(due.length === 0){
+    if(activeReminderNoteId){
+      activeReminderNoteId = null;
+      closeReminderPopup();
+    }
+    return;
+  }
+
+  // A popup is already showing for a note that's still due - don't touch it,
+  // so we don't re-vibrate or flicker every 15-second check.
+  if(activeReminderNoteId && due.some(n => n.id === activeReminderNoteId)) return;
+
+  showReminderPopup(due[0]);
+}
+
+function showReminderPopup(note){
+  activeReminderNoteId = note.id;
+  document.getElementById('reminderPopupTitle').textContent = note.title;
+  const detailsEl = document.getElementById('reminderPopupDetails');
+  detailsEl.textContent = note.details || '';
+  detailsEl.classList.toggle('hidden', !note.details);
+  document.getElementById('reminderDoneBtn').setAttribute('data-rem-done', note.id);
+  document.querySelectorAll('#reminderLockOverlay [data-rem-snooze]').forEach(btn=>{
+    btn.setAttribute('data-rem-snooze', note.id);
   });
-  wrap.innerHTML = html;
+  document.getElementById('reminderLockOverlay').classList.remove('hidden');
+  if('vibrate' in navigator){
+    try{ navigator.vibrate([300, 150, 300]); }catch(e){ /* ignore unsupported devices */ }
+  }
+}
+
+function closeReminderPopup(){
+  document.getElementById('reminderLockOverlay').classList.add('hidden');
 }
 function escapeHtml(s){
   return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1962,7 +2041,6 @@ function renderAll(){
 
 /* Tab switching */
 function switchTab(tab){
-  if(state.reminderPopupActive) return; // block tab switches while a reminder must be handled
   state.activeTab = tab;
   ['sales','reports','stock','notes','udhaar'].forEach(t=>{
     document.getElementById('tab-'+t).classList.toggle('hidden', t!==tab);
@@ -1993,10 +2071,7 @@ function switchPeriod(period){
 }
 
 /* Modal helpers */
-function openModal(id){
-  if(state.reminderPopupActive) return; // reminder popup has priority; don't let other modals open on top of it
-  document.getElementById(id).classList.remove('hidden');
-}
+function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
 function showConfirm(title, message, onConfirm){
   document.getElementById('confirmTitle').textContent = title;
@@ -2014,22 +2089,6 @@ function initEvents(){
   document.querySelectorAll('.navbtn').forEach(btn=>{
     btn.addEventListener('click', ()=> switchTab(btn.getAttribute('data-tab')));
   });
-
-  // Blocking reminder popup — action buttons only (no backdrop dismiss)
-  document.getElementById('reminderPopupOverlay').addEventListener('click', (e)=>{
-    const btn = e.target.closest('[data-rpop-action]');
-    if(!btn) return;
-    handleReminderAction(btn.getAttribute('data-rpop-action'));
-  });
-
-  // Re-check due reminders whenever the app/PWA returns to the foreground,
-  // since timers can be throttled while the page is backgrounded.
-  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) reminderTick(); });
-  window.addEventListener('focus', reminderTick);
-  window.addEventListener('pageshow', reminderTick);
-
-  // Keep the sticky Today's Sales card correctly offset beneath the app bar
-  window.addEventListener('resize', updateAppbarHeight);
 
   // Numpad (event delegation)
   document.getElementById('numpad').addEventListener('click', (e)=>{
@@ -2385,7 +2444,8 @@ function initEvents(){
     }
   });
 
-  // Reminder banner actions (delegation)
+  // Reminder banner actions (delegation) - legacy container, kept empty now
+  // but the listener is harmless to leave in place.
   document.getElementById('reminderBanner').addEventListener('click', async (e)=>{
     const doneBtn = e.target.closest('[data-rem-done]');
     const snoozeBtn = e.target.closest('[data-rem-snooze]');
@@ -2399,6 +2459,37 @@ function initEvents(){
       try{ await snoozeNote(id, mins); }
       catch(err){ toast('Could not snooze reminder.'); }
     }
+  });
+
+  // Blocking reminder popup actions - only one popup at a time, no backdrop
+  // or Escape dismissal; the app stays locked until Done/snooze is chosen.
+  document.getElementById('reminderLockOverlay').addEventListener('click', async (e)=>{
+    const doneBtn = e.target.closest('[data-rem-done]');
+    const snoozeBtn = e.target.closest('[data-rem-snooze]');
+    if(doneBtn){
+      const id = doneBtn.getAttribute('data-rem-done');
+      if(!id) return;
+      try{ await toggleNoteDone(id); }
+      catch(err){ toast('Could not update reminder.'); }
+      activeReminderNoteId = null;
+      closeReminderPopup();
+      renderNotesTab();
+      renderReminderBanner();
+    } else if(snoozeBtn){
+      const id = snoozeBtn.getAttribute('data-rem-snooze');
+      if(!id) return;
+      const mins = parseInt(snoozeBtn.getAttribute('data-mins'),10);
+      activeReminderNoteId = null;
+      closeReminderPopup();
+      try{ await snoozeNote(id, mins); }
+      catch(err){ toast('Could not snooze reminder.'); }
+    }
+  });
+
+  // Activation screen
+  document.getElementById('activateBtn').addEventListener('click', handleActivateClick);
+  document.getElementById('activationCodeInput').addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter') handleActivateClick();
   });
 
   // ---- Udhaar (credit tracking) ----
@@ -2540,13 +2631,12 @@ async function init(){
   initEvents();
   renderAll();
   switchTab('sales');
-  updateAppbarHeight();
-  // Recompute after fonts/layout settle (store name length, font loading, etc.)
-  setTimeout(updateAppbarHeight, 300);
-  // Periodic reminder check: refreshes the banner and shows the blocking
-  // popup for any newly-due reminder (also re-checked on focus/visibility).
-  checkDueReminders();
-  setInterval(reminderTick, 15000);
+  // Periodic reminder check
+  setInterval(renderReminderBanner, 15000);
+  // Authorization gate - shows the activation screen until a valid license
+  // is confirmed. Runs after the app UI is wired up/rendered underneath it.
+  try{ await initAuth(); }
+  catch(err){ showActivationScreen(); }
 }
 
 if(document.readyState === 'loading'){
